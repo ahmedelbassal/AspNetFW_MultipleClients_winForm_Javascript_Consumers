@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="Scripts/jquery-3.6.0.min.js"></script>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+
+    <div class="form-group text-center my-3">
+        <input placeholder="Id" type="number" name="Id" class="form-control w-50" />
+
+    </div>
+    <div class="form-group text-center">
+
+        <input placeholder="Name" type="text" name="Name" class="form-control w-50" />
+    </div>
+    <div class="form-group text-center">
+        <input placeholder="Salary" type="text" id="salary" name="Salary" class="form-control w-50" />
+
+    </div>
+    <div class="form-group text-center">
+        <input placeholder="Department Id" type="text" name="DeptId" class="form-control w-50" />
+
+    </div>
+
+
+
+
+    <input type="button" onclick="AddEmpFunc()" value="Add" class="btn btn-success" />
+    <input type="button" onclick="UpdateEmpFunc()" value="Update" class="btn btn-warning" />
+
+    <div>
+        <label>Select employee before delete</label>
+        <select id="ddlEmps" onchange="ddlChange()">
+        </select>
+        <input type="button" onclick="DeleteEmpFunc()" value="Delete" class="btn btn-danger" />
+
+
+    </div>
+    <table class="table table-striped" id="empsTable">
+        <thead class="bg-secondary text-white">
+        <th>Id</th>
+        <th>Name</th>
+        <th>Salary</th>
+        <th>DeptId</th>
+        </thead>
+        <tbody id="emps">
+        </tbody>
+    </table>
+
+
+    <script>
+
+        $(function () {
+            $.ajax({
+                method: "Get",
+                url: "http://localhost:8547/api/employees",
+                //data
+                //, dataType,
+                //accepts
+                success: function (data) {
+                    //alert(JSON.stringify(data));
+                    for (let x = 0; x < data.length; x++) {
+
+                        var appendRowTxt = `<tr id='emp${data[x].Id}'>
+                                            <td>${data[x].Id}</td>
+                                            <td>${data[x].Name}</td>
+                                            <td>${data[x].Salary}</td>
+                                            <td>${data[x].DeptId}</td>
+                                            </tr>`
+
+                        $("#emps").append(appendRowTxt);
+
+
+
+                        $("#ddlEmps").append("<option id='optionEmp" + data[x].Id+"' value='" + data[x].Id + "'>" + data[x].Name + "</option>")
+
+                    }
+                },
+                error: function (err) {
+                    //alert(err.responseText);
+                    alert(err.statusCode());
+                }
+            });
+        })
+
+
+        function AddEmpFunc() {
+
+
+            var emp =
+            {
+                Id: $("[name='Id']").val(),
+                Name: $("[name='Name']").val(),
+                Salary: $("[name='Salary']").val(),
+                DeptId: $("[name='DeptId']").val()
+            }
+
+
+
+
+            $.ajax(
+                {
+                    method: "Post",
+                    url: "http://localhost:8547/api/employees",
+                    dataType: "Aplication/Json",
+                    data: emp,
+                    //success: function (data) {
+                    //    alert("success")
+
+
+                    //},
+                    statusCode: {
+                        201: function (data) {
+                            $("#emps").append("<tr id='emp" + emp.Id + "'>")
+                            $("#emps").append("<td>" + emp.Id + "</td>")
+                            $("#emps").append("<td>" + emp.Name + "</td>")
+                            $("#emps").append("<td>" + emp.Salary + "</td>")
+                            $("#emps").append("<td>" + emp.DeptId + "</td>")
+                            $("#emps").append("</tr>")
+
+
+                            $("#ddlEmps").append("<option id='optionEmp" + emp.Id + "' value='" + emp.Id + "'>" + emp.Name + "</option>")
+
+
+                          
+
+                        },
+                        400: function (err) {
+                            alert(err.responseText)
+                        }
+                    },
+                    //error: function (err) {
+                    //    alert("Failed")
+                    //    alert(err.status)
+                    //}
+                }
+
+            )
+        }
+
+        function ddlChange() {
+
+            // get values from selected list in option
+
+            var splitted = document.getElementById("emp" + $("#ddlEmps").val()).innerHTML.split("<td>");
+
+            //$("[name='Id']").val() = splitted[1];
+            //$("[name='Name']").val() = splitted[2]
+            //$("[name='Salary']").val() = splitted[3]
+            //$("[name='DeptId']").val() = splitted[4]
+
+            //alert(splitted[1].split("</td>")[0])
+            //alert(splitted[2].split("</td>")[0])
+            //alert(splitted[3].split("</td>")[0])
+            //alert(splitted[4].split("</td>")[0])
+
+            $("[name='Id']").val(splitted[1].split("</td>")[0]) 
+
+            $("[name='Name']").val(splitted[2].split("</td>")[0]) 
+            $("[name='Salary']").val(splitted[3].split("</td>")[0]) 
+            $("[name='DeptId']").val(splitted[4].split("</td>")[0]) 
+            }
+
+
+        function UpdateEmpFunc() {
+            var emp =
+            {
+                Id: $("[name='Id']").val(),
+                Name: $("[name='Name']").val(),
+                Salary: $("[name='Salary']").val(),
+                DeptId: $("[name='DeptId']").val()
+            }
+
+
+            $.ajax(
+                {
+
+                    method: "Put",
+                    url: "http://localhost:8547/api/employees/" + $("[name='Id']").val(),
+                    dataType: "Aplication/Json",
+                    data: emp,
+                    //success: function (data) {
+                    //    alert("success")
+                    //},
+
+                    statusCode: {
+                        204: function () {
+
+
+                            $("#emp" + emp.Id).empty();
+
+                            $("#emp" + emp.Id).append("<td>" + emp.Id + "</td>")
+                            $("#emp" + emp.Id).append("<td>" + emp.Name + "</td>")
+                            $("#emp" + emp.Id).append("<td>" + emp.Salary + "</td>")
+                            $("#emp" + emp.Id).append("<td>" + emp.DeptId + "</td>")
+                        },
+                        400: function (err) {
+                            alert(err.responseText)
+                        }
+
+                    }
+
+                    //,
+                    //error: function (err) {
+                    //    alert("err.responseText")
+                    //    alert(err.status)
+
+                    //}
+                }
+
+            )
+        }
+
+
+        function DeleteEmpFunc() {
+
+            //$("select#ddlEmps").change(function () {
+            //    var selectedEmployee = $(this).children("option:selected").val();
+            //    alert("You have selected the employee - " + selectedEmployee);
+            //});
+
+            var selectedEmployeeId = $("#ddlEmps").val();
+            //alert("You have selected the employee - " + selectedEmployeeId);
+
+            $.ajax(
+                {
+                    method: "Delete",
+                    url: "http://localhost:8547/api/employees/" + selectedEmployeeId,
+                    dataType: "Application/Json",
+                    statusCode: {
+                        200: function (data) {
+
+                            var removedRow = document.getElementById("emp" + selectedEmployeeId);
+
+                            document.getElementById("emps").removeChild(removedRow)
+
+
+
+                            document.getElementById("ddlEmps").removeChild(document.getElementById(`optionEmp${selectedEmployeeId}`))
+                        },
+                        400: function (err) {
+                            alert(err.responseText)
+                        },
+                        404: function (err) {
+                            alert(err.responseText)
+                        }
+                    },
+
+                }
+
+            )
+        }
+
+
+    </script>
+
+</body>
+</html>
